@@ -1,14 +1,75 @@
+<!-- filepath: templates/index.html -->
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title></title>
-        <meta name="description" content="">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="">
-    </head>
-    <body>
-        <h1>Welcome to the AI Ninja</h1>
-    </body>
+<head>
+    <title>WebSocket Example</title>
+</head>
+<body>
+    <h1>WebSocket Example</h1>
+    <input id="messageInput" type="text" placeholder="Type a message...">
+    <button onclick="sendMessage()">Send</button>
+    <ul id="messages"></ul>
+
+    <script>
+        const ws = new WebSocket("ws://127.0.0.1:8000/ws/sc/");
+
+        {% comment %} ws.onopen = function() {
+            console.log("WebSocket connection open.");
+            ws.send("Hi, message from client!");
+        };
+        ws.onmessage = function(event){
+            console.log("Message receive from server...", event);
+        }
+        ws.onerror = function(event){
+            console.error("WebSocket error:", event);
+        };
+        ws.onclose = function() {
+            console.log("WebSocket connection closed.");
+        }; {% endcomment %}
+
+
+        ws.addEventListener("open", (event) => {
+            console.log("WebSocket connection open.");
+        });
+
+        ws.addEventListener("message", (event) => {
+            const data = JSON.parse(event.data);
+            console.log(data.message);
+            const messages = document.getElementById("messages");
+            const para = document.createElement("p");
+            para.textContent = data.message;
+            messages.appendChild(para);
+        });
+
+        {% comment %} ws.addEventListener("message", (event) => {
+            const messages = document.getElementById("messages");
+            const li = document.createElement("li");
+            let data = JSON.parse(event.data);
+            li.textContent = data.count;
+            messages.appendChild(li);
+        }); {% endcomment %}
+
+        ws.addEventListener("error", (event) => {
+            console.error("WebSocket error.");
+            ws.close();
+        });
+
+        ws.addEventListener("close", (event) => {
+            console.log("WebSocket connection closed.");
+        });
+
+
+        function sendMessage() {
+            const messageInput = document.getElementById("messageInput");
+            const message = messageInput.value;
+            ws.send(
+                JSON.stringify({
+                    message: message,
+                })
+            );
+            messageInput.value = "";
+        }
+
+    </script>
+</body>
 </html>
