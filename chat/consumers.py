@@ -11,6 +11,7 @@ class SynchronousConsumer(SyncConsumer):
         print("Websocket connected...", event)
         print("Channel Layer:", self.channel_layer)
         print("Channel Name:", self.channel_name)
+        print(self.scope['url_route']['kwargs']['group_name'])
         async_to_sync(self.channel_layer.group_add)("Programmer", self.channel_name)
         self.send({
             "type": "websocket.accept",
@@ -31,17 +32,6 @@ class SynchronousConsumer(SyncConsumer):
             "text": json.dumps({"message": event['text']}),
         })
         
-        
-    
-    # def websocket_receive(self, event):
-    #     print(f"{event['text']}" + " " + "received from client.")
-    #     for x in range(10):
-    #         self.send({
-    #             "type": "websocket.send",
-    #             "text": json.dumps({"count": str(x)}),
-    #         })
-    #         sleep(1)
-        
     def websocket_disconnect(self, event):
         print("Websocket disconnected...", event)
         print("Channel Layer:", self.channel_layer)
@@ -52,20 +42,33 @@ class SynchronousConsumer(SyncConsumer):
 
 class AsynchronousConsumer(AsyncConsumer):
     async def websocket_connect(self, event):
+        self.group_name = self.scope['url_route']['kwargs']['group_name']
+        print("Group Name... ", self.group_name)
+
+        await self.channel_layer.group_add(self.group_name, self.channel_name)
         print("Async Websocket connected...", event)
+
         await self.send({
             "type": "websocket.accept",
         })
-
+        
     async def websocket_receive(self, event):
-        print(f"{event['text']}" + " " + "received from client.")
-        for x in range(50):
-           await self.send({
-                "type": "websocket.send",
-                "text": str(x),
-            })
-           await asyncio.sleep(1)
+        print("Message received from client:", event['text'])
+        data = json.loads(event['text'])
+        await self.channel_layer.group_send(self.group_name, {
+            "type": "chat.message",
+            "text": data['message'],
+        })
+
+    async def chat_message(self, event):
+        print("Received message from group:", event['text'])
+        await self.send({
+            "type": "websocket.send",
+            "text": json.dumps({"message": event['text']}),
+        })
+    
 
     async def websocket_disconnect(self, event):
         print("Async Websocket disconnected...")
+        await self.channel_layer.group_discard(self.group_name, self.channel_name)
         raise StopConsumer()

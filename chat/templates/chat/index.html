@@ -5,13 +5,19 @@
     <title>WebSocket Example</title>
 </head>
 <body>
-    <h1>WebSocket Example</h1>
+    <h1>Group Name: {{ group_name|capfirst }}</h1>
     <input id="messageInput" type="text" placeholder="Type a message...">
     <button onclick="sendMessage()">Send</button>
     <ul id="messages"></ul>
 
+    {{ group_name|json_script:'groupname' }}
+
     <script>
-        const ws = new WebSocket("ws://127.0.0.1:8000/ws/sc/");
+        const groupName = JSON.parse(document.getElementById("groupname").textContent);
+        console.log(groupName);
+        {% comment %} const ws = new WebSocket("ws://127.0.0.1:8000/ws/ac/"); {% endcomment %}
+        
+        const ws = new WebSocket('ws://' + window.location.host + '/ws/ac/' + groupName + '/')
 
         {% comment %} ws.onopen = function() {
             console.log("WebSocket connection open.");

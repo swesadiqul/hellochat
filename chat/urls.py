@@ -3,5 +3,5 @@ from chat import views
 
 
 urlpatterns = [
-    path("", views.index, name="home"),
+    path("<str:group_name>/", views.index, name="home"),
 ]
