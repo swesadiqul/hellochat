@@ -8,7 +8,11 @@
     <h1>Group Name: {{ group_name|capfirst }}</h1>
     <input id="messageInput" type="text" placeholder="Type a message...">
     <button onclick="sendMessage()">Send</button>
-    <ul id="messages"></ul>
+    <div id="messages">
+        {% for chat in chats %}
+            <p>{{ chat.content }}</p>
+        {% endfor %}
+    </div>
 
     {{ group_name|json_script:'groupname' }}
 
@@ -17,7 +21,9 @@
         console.log(groupName);
         {% comment %} const ws = new WebSocket("ws://127.0.0.1:8000/ws/ac/"); {% endcomment %}
         
-        const ws = new WebSocket('ws://' + window.location.host + '/ws/ac/' + groupName + '/')
+        {% comment %} const ws = new WebSocket('ws://' + window.location.host + '/ws/ac/' + groupName + '/') {% endcomment %}
+
+        const ws = new WebSocket('ws://' + window.location.host + '/ws/sc/' + groupName + '/')
 
         {% comment %} ws.onopen = function() {
             console.log("WebSocket connection open.");
